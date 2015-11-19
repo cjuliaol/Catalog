@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">AsyncTask</string>
+    <string name="do_task">Get Data</string>
+</resources>
