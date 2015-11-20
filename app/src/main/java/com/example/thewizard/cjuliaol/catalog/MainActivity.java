@@ -1,9 +1,11 @@
 package com.example.thewizard.cjuliaol.catalog;
 
+import android.app.ListActivity;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
+import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
@@ -20,7 +22,7 @@ import com.example.thewizard.cjuliaol.catalog.parsers.FlowerJSONParser;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends ListActivity {
 
     TextView output;
     ProgressBar progressBar;
@@ -32,12 +34,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//		Initialize the TextView for vertical scrolling
-        output = (TextView) findViewById(R.id.textView);
-        output.setMovementMethod(new ScrollingMovementMethod());
+       //		Initialize the TextView for vertical scrolling
+      //  output = (TextView) findViewById(R.id.textView);
+     //   output.setMovementMethod(new ScrollingMovementMethod());
 
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        progressBar.setVisibility(View.INVISIBLE);
         mTasks = new ArrayList<>();
 
     }
@@ -45,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
-        return true;
+        return  true;
     }
 
     @Override
@@ -53,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
         if (item.getItemId() == R.id.action_do_task) {
 
             if (isOnline()) {
-                requestData("http://services.hanselandpetal.com/feeds/flowers.json");
+                requestData("http://services.hanselandpetal.com/secure/flowers.json");
 
             } else {
                 Toast.makeText(this, "Network isn't available", Toast.LENGTH_LONG).show();
@@ -88,11 +89,11 @@ public class MainActivity extends AppCompatActivity {
 
     protected void updateDisplay() {
 
-        for (Flower flower: mFlowerList ) {
+        /*for (Flower flower: mFlowerList ) {
             output.append(flower.getName() + "\n");
-        }
-
-
+        }*/
+      FlowerAdapter adapter = new FlowerAdapter(this,R.layout.item_flower, mFlowerList);
+      setListAdapter(adapter);
     }
 
     private class MyTask extends AsyncTask<String, String, String> {
@@ -121,20 +122,27 @@ public class MainActivity extends AppCompatActivity {
                 }
             }*/
 
-           String content = HttpManager.getData(params[0]);
+           String content = HttpManager.getData(params[0],"feeduser","feedpassword");
             return content;
         }
 
         @Override
         protected void onPostExecute(String result) {
 
-            mFlowerList = FlowerJSONParser.parseFeed(result);
-            updateDisplay();
 
             mTasks.remove(this);
             if (mTasks.size() == 0) {
                 progressBar.setVisibility(View.INVISIBLE);
             }
+
+            if(result == null) {
+                Toast.makeText(MainActivity.this,"Can't connect to webservice",Toast.LENGTH_LONG).show();
+             return;
+            }
+
+            mFlowerList = FlowerJSONParser.parseFeed(result);
+            updateDisplay();
+
 
         }
 

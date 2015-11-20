@@ -1,4 +1,5 @@
 <resources>
-    <string name="app_name">AsyncTask</string>
+    <string name="app_name">Catalog</string>
     <string name="do_task">Get Data</string>
+    <string name="flower_name_placeholder"></string>
 </resources>
