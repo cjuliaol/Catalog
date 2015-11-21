@@ -2,6 +2,8 @@ package com.example.thewizard.cjuliaol.catalog;
 
 import android.util.Base64;
 
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -32,10 +34,13 @@ public class HttpManager {
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod(p.getMethod());
 
+            JSONObject jsonObject = new JSONObject(p.getParams());
+            String params = "params="+jsonObject.toString();
+
             if( p.getMethod().equals("POST")) {
               connection.setDoOutput(true);
                 OutputStreamWriter writer =new OutputStreamWriter(connection.getOutputStream());
-                writer.write(p.getEncodedParams());
+                writer.write(params);
                 writer.flush();
 
             }
