@@ -5,6 +5,7 @@ import android.util.Base64;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -15,14 +16,29 @@ import java.net.URL;
 
 public class HttpManager {
 
-    public static String getData(String uri) {
+    public static String getData(RequestPackage p) {
 
+        String uri = p.getUri();
         BufferedReader reader = null;
         HttpURLConnection connection = null;
+
+        if (p.getMethod().equals("GET") ) {
+
+            uri += "?"+p.getEncodedParams();
+        }
 
         try {
             URL url = new URL(uri);
             connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod(p.getMethod());
+
+            if( p.getMethod().equals("POST")) {
+              connection.setDoOutput(true);
+                OutputStreamWriter writer =new OutputStreamWriter(connection.getOutputStream());
+                writer.write(p.getEncodedParams());
+                writer.flush();
+
+            }
 
             StringBuilder builder = new StringBuilder();
             reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));

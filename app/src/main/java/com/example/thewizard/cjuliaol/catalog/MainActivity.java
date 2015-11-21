@@ -59,7 +59,7 @@ public class MainActivity extends ListActivity {
         if (item.getItemId() == R.id.action_do_task) {
 
             if (isOnline()) {
-                requestData("http://services.hanselandpetal.com/secure/flowers.json");
+                requestData("http://services.hanselandpetal.com/restful.php");
 
             } else {
                 Toast.makeText(this, "Network isn't available", Toast.LENGTH_LONG).show();
@@ -70,9 +70,16 @@ public class MainActivity extends ListActivity {
     }
 
     private void requestData(String uri) {
+        RequestPackage requestPackage = new RequestPackage();
+        requestPackage.setMethod("POST");
+        requestPackage.setUri(uri);
+        requestPackage.setParam("name1", "param1");
+        requestPackage.setParam("name2", "param2");
+        requestPackage.setParam("name3", "param3");
+
         MyTask task = new MyTask();
         // With default executor: serial processing
-         task.execute(uri);
+         task.execute(requestPackage);
 
         //With executor for parallel processing
         // task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "param1", "param2", "param3");
@@ -101,7 +108,7 @@ public class MainActivity extends ListActivity {
       setListAdapter(adapter);
     }
 
-    private class MyTask extends AsyncTask<String, String, List<Flower>> {
+    private class MyTask extends AsyncTask<RequestPackage, String, String> {
 
         @Override
         protected void onPreExecute() {
@@ -115,7 +122,7 @@ public class MainActivity extends ListActivity {
         }
 
         @Override
-        protected List<Flower> doInBackground(String... params) {
+        protected String doInBackground(RequestPackage... params) {
 
             /* example
             for (int i = 0; i < params.length; i++) {
@@ -127,14 +134,13 @@ public class MainActivity extends ListActivity {
                 }
             }*/
 
-           String content = HttpManager.getData(params[0], "feeduser", "feedpassword");
-            mFlowerList = FlowerJSONParser.parseFeed(content);
+            String content = HttpManager.getData(params[0]);
 
-            return mFlowerList;
+            return content;
         }
 
         @Override
-        protected void onPostExecute(List<Flower> result) {
+        protected void onPostExecute(String result) {
 
 
             mTasks.remove(this);
