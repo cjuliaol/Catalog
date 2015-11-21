@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
+import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,11 +26,18 @@ public class FlowerAdapter extends ArrayAdapter<Flower> {
 
     private Context mContext;
     private List<Flower> mFlowerList;
+    private LruCache<Integer, Bitmap> imageCache;
 
     public FlowerAdapter(Context context, int resource, List<Flower> objects) {
         super(context, resource, objects);
         this.mContext = context;
         this.mFlowerList = objects;
+
+        final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+        final int cacheSize = maxMemory / 8;
+        imageCache = new LruCache<>(cacheSize);
+
+
     }
 
     @Override
@@ -46,12 +54,12 @@ public class FlowerAdapter extends ArrayAdapter<Flower> {
         flowerName.setText(flower.getName());
 
         // Display the flower photo in the imageview widget
+        Bitmap bitmap = imageCache.get(flower.getProductId());
 
-        if (flower.getBitmap() != null) {
+        if ( bitmap != null) {
             ImageView flowerImage = (ImageView) view.findViewById(R.id.flower_image);
             flowerImage.setImageBitmap(flower.getBitmap());
-        }
-        else {
+        } else {
             FlowerAndView container = new FlowerAndView();
             container.flower = flower;
             container.view = view;
@@ -92,7 +100,7 @@ public class FlowerAdapter extends ArrayAdapter<Flower> {
                 inputStream.close();
 
                 container.bitmap = bitmap;
-                return  container;
+                return container;
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -102,10 +110,13 @@ public class FlowerAdapter extends ArrayAdapter<Flower> {
         }
 
         @Override
-        protected void onPostExecute(FlowerAndView flowerAndView) {
-            ImageView imageView = (ImageView) flowerAndView.view.findViewById(R.id.flower_image);
-            imageView.setImageBitmap(flowerAndView.bitmap);
-            flowerAndView.flower.setBitmap(flowerAndView.bitmap);
+        protected void onPostExecute(FlowerAndView result) {
+
+            ImageView imageView = (ImageView) result.view.findViewById(R.id.flower_image);
+            imageView.setImageBitmap(result.bitmap);
+
+            //result.flower.setBitmap(result.bitmap);
+            imageCache.put(result.flower.getProductId(),result.bitmap);
 
         }
     }
