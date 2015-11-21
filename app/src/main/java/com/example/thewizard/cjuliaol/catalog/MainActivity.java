@@ -2,6 +2,8 @@ package com.example.thewizard.cjuliaol.catalog;
 
 import android.app.ListActivity;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -19,6 +21,8 @@ import android.widget.Toast;
 import com.example.thewizard.cjuliaol.catalog.model.Flower;
 import com.example.thewizard.cjuliaol.catalog.parsers.FlowerJSONParser;
 
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +32,7 @@ public class MainActivity extends ListActivity {
     ProgressBar progressBar;
     List<MyTask> mTasks;
     List<Flower> mFlowerList;
+    public static final String PHOTO_BASE_URL="http://services.hanselandpetal.com/photos/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,7 +101,7 @@ public class MainActivity extends ListActivity {
       setListAdapter(adapter);
     }
 
-    private class MyTask extends AsyncTask<String, String, String> {
+    private class MyTask extends AsyncTask<String, String, List<Flower>> {
 
         @Override
         protected void onPreExecute() {
@@ -110,7 +115,7 @@ public class MainActivity extends ListActivity {
         }
 
         @Override
-        protected String doInBackground(String... params) {
+        protected List<Flower> doInBackground(String... params) {
 
             /* example
             for (int i = 0; i < params.length; i++) {
@@ -122,12 +127,14 @@ public class MainActivity extends ListActivity {
                 }
             }*/
 
-           String content = HttpManager.getData(params[0],"feeduser","feedpassword");
-            return content;
+           String content = HttpManager.getData(params[0], "feeduser", "feedpassword");
+            mFlowerList = FlowerJSONParser.parseFeed(content);
+
+            return mFlowerList;
         }
 
         @Override
-        protected void onPostExecute(String result) {
+        protected void onPostExecute(List<Flower> result) {
 
 
             mTasks.remove(this);
@@ -140,7 +147,6 @@ public class MainActivity extends ListActivity {
              return;
             }
 
-            mFlowerList = FlowerJSONParser.parseFeed(result);
             updateDisplay();
 
 

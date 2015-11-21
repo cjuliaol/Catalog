@@ -1,5 +1,7 @@
 package com.example.thewizard.cjuliaol.catalog.model;
 
+import android.graphics.Bitmap;
+
 /**
  * Created by cjuliaol on 18-Nov-15.
  */
@@ -11,6 +13,7 @@ public class Flower {
     private String instructions;
     private double price;
     private String photo;
+    private Bitmap bitmap;
 
     public String getCategory() {
         return category;
@@ -58,5 +61,13 @@ public class Flower {
 
     public void setProductId(int productId) {
         this.productId = productId;
+    }
+
+    public Bitmap getBitmap() {
+        return bitmap;
+    }
+
+    public void setBitmap(Bitmap bitmap) {
+        this.bitmap = bitmap;
     }
 }
