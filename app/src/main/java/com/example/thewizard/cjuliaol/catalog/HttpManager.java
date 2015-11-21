@@ -1,6 +1,7 @@
 package com.example.thewizard.cjuliaol.catalog;
 
 import android.util.Base64;
+import android.util.Log;
 
 import org.json.JSONObject;
 
@@ -18,32 +19,20 @@ import java.net.URL;
 
 public class HttpManager {
 
+    public static final String TAG="HttpManagerLog";
+
     public static String getData(RequestPackage p) {
 
         String uri = p.getUri();
         BufferedReader reader = null;
         HttpURLConnection connection = null;
 
-        if (p.getMethod().equals("GET") ) {
-
-            uri += "?"+p.getEncodedParams();
-        }
-
         try {
+
             URL url = new URL(uri);
+
             connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod(p.getMethod());
 
-            JSONObject jsonObject = new JSONObject(p.getParams());
-            String params = "params="+jsonObject.toString();
-
-            if( p.getMethod().equals("POST")) {
-              connection.setDoOutput(true);
-                OutputStreamWriter writer =new OutputStreamWriter(connection.getOutputStream());
-                writer.write(params);
-                writer.flush();
-
-            }
 
             StringBuilder builder = new StringBuilder();
             reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
@@ -56,13 +45,6 @@ public class HttpManager {
 
         } catch (Exception e) {
             e.printStackTrace();
-
-            try {
-                int status = connection.getResponseCode();
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
-
             return null;
         } finally {
             if (reader != null) {

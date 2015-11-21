@@ -59,7 +59,7 @@ public class MainActivity extends ListActivity {
         if (item.getItemId() == R.id.action_do_task) {
 
             if (isOnline()) {
-                requestData("http://services.hanselandpetal.com/restfuljson.php");
+                requestData("http://services.hanselandpetal.com/feeds/flowers.json");
 
             } else {
                 Toast.makeText(this, "Network isn't available", Toast.LENGTH_LONG).show();
@@ -71,11 +71,7 @@ public class MainActivity extends ListActivity {
 
     private void requestData(String uri) {
         RequestPackage requestPackage = new RequestPackage();
-        requestPackage.setMethod("POST");
         requestPackage.setUri(uri);
-        requestPackage.setParam("name1", "param1");
-        requestPackage.setParam("name2", "param2");
-        requestPackage.setParam("name3", "param3");
 
         MyTask task = new MyTask();
         // With default executor: serial processing
@@ -108,7 +104,7 @@ public class MainActivity extends ListActivity {
       setListAdapter(adapter);
     }
 
-    private class MyTask extends AsyncTask<RequestPackage, String, String> {
+    private class MyTask extends AsyncTask<RequestPackage, String, List<Flower>> {
 
         @Override
         protected void onPreExecute() {
@@ -122,7 +118,7 @@ public class MainActivity extends ListActivity {
         }
 
         @Override
-        protected String doInBackground(RequestPackage... params) {
+        protected List<Flower> doInBackground(RequestPackage... params) {
 
             /* example
             for (int i = 0; i < params.length; i++) {
@@ -135,12 +131,12 @@ public class MainActivity extends ListActivity {
             }*/
 
             String content = HttpManager.getData(params[0]);
-
-            return content;
+             mFlowerList = FlowerJSONParser.parseFeed(content);
+            return mFlowerList;
         }
 
         @Override
-        protected void onPostExecute(String result) {
+        protected void onPostExecute(List<Flower> result) {
 
 
             mTasks.remove(this);
