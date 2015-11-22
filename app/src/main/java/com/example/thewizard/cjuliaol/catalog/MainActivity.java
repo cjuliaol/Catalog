@@ -18,6 +18,11 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.thewizard.cjuliaol.catalog.model.Flower;
 import com.example.thewizard.cjuliaol.catalog.parsers.FlowerJSONParser;
 
@@ -30,28 +35,28 @@ public class MainActivity extends ListActivity {
 
     TextView output;
     ProgressBar progressBar;
-    List<MyTask> mTasks;
+
     List<Flower> mFlowerList;
-    public static final String PHOTO_BASE_URL="http://services.hanselandpetal.com/photos/";
+    public static final String PHOTO_BASE_URL = "http://services.hanselandpetal.com/photos/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-       //		Initialize the TextView for vertical scrolling
-      //  output = (TextView) findViewById(R.id.textView);
-     //   output.setMovementMethod(new ScrollingMovementMethod());
+        //		Initialize the TextView for vertical scrolling
+        //  output = (TextView) findViewById(R.id.textView);
+        //   output.setMovementMethod(new ScrollingMovementMethod());
 
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        mTasks = new ArrayList<>();
+
 
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
-        return  true;
+        return true;
     }
 
     @Override
@@ -70,15 +75,27 @@ public class MainActivity extends ListActivity {
     }
 
     private void requestData(String uri) {
-        RequestPackage requestPackage = new RequestPackage();
-        requestPackage.setUri(uri);
+//        RequestPackage requestPackage = new RequestPackage();
+//        requestPackage.setUri(uri);
 
-        MyTask task = new MyTask();
-        // With default executor: serial processing
-         task.execute(requestPackage);
+        StringRequest request = new StringRequest(uri,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        mFlowerList = FlowerJSONParser.parseFeed(response);
+                        updateDisplay();
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Toast.makeText(MainActivity.this, error.getMessage().toString(), Toast.LENGTH_SHORT);
+                    }
+                });
 
-        //With executor for parallel processing
-        // task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "param1", "param2", "param3");
+        RequestQueue queue = Volley.newRequestQueue(this);
+        queue.add(request);
+
     }
 
     protected boolean isOnline() {
@@ -100,64 +117,9 @@ public class MainActivity extends ListActivity {
         /*for (Flower flower: mFlowerList ) {
             output.append(flower.getName() + "\n");
         }*/
-      FlowerAdapter adapter = new FlowerAdapter(this,R.layout.item_flower, mFlowerList);
-      setListAdapter(adapter);
+        FlowerAdapter adapter = new FlowerAdapter(this, R.layout.item_flower, mFlowerList);
+        setListAdapter(adapter);
     }
 
-    private class MyTask extends AsyncTask<RequestPackage, String, List<Flower>> {
 
-        @Override
-        protected void onPreExecute() {
-            //updateDisplay("Starting task");
-
-            if (mTasks.size() == 0) {
-                progressBar.setVisibility(View.VISIBLE);
-            }
-            mTasks.add(this);
-
-        }
-
-        @Override
-        protected List<Flower> doInBackground(RequestPackage... params) {
-
-            /* example
-            for (int i = 0; i < params.length; i++) {
-                publishProgress("Working with " + params[i]);
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }*/
-
-            String content = HttpManager.getData(params[0]);
-             mFlowerList = FlowerJSONParser.parseFeed(content);
-            return mFlowerList;
-        }
-
-        @Override
-        protected void onPostExecute(List<Flower> result) {
-
-
-            mTasks.remove(this);
-            if (mTasks.size() == 0) {
-                progressBar.setVisibility(View.INVISIBLE);
-            }
-
-            if(result == null) {
-                Toast.makeText(MainActivity.this,"Can't connect to webservice",Toast.LENGTH_LONG).show();
-             return;
-            }
-
-            updateDisplay();
-
-
-        }
-
-        @Override
-        protected void onProgressUpdate(String... values) {
-
-            //updateDisplay(values[0]);
-        }
-    }
 }
