@@ -58,7 +58,6 @@ public class FlowerAdapter extends ArrayAdapter<Flower> {
         View view = inflater.inflate(R.layout.item_flower, parent, false);
 
         // Display flower name in the textview widget
-
         final Flower flower = mFlowerList.get(position);
 
         TextView flowerName = (TextView) view.findViewById(R.id.flower_name);
@@ -69,14 +68,14 @@ public class FlowerAdapter extends ArrayAdapter<Flower> {
         final ImageView flowerImage = (ImageView) view.findViewById(R.id.flower_image);
 
         if (bitmap != null) {
-            flowerImage.setImageBitmap(flower.getBitmap());
+            flowerImage.setImageBitmap(bitmap);
         } else {
             String imageUrl = MainActivity.PHOTO_BASE_URL + flower.getPhoto();
             ImageRequest request = new ImageRequest(imageUrl, new Response.Listener<Bitmap>() {
                 @Override
                 public void onResponse(Bitmap response) {
-                flowerImage.setImageBitmap(response);
-                    imageCache.put(flower.getProductId(),response);
+                    flowerImage.setImageBitmap(response);
+                    imageCache.put(flower.getProductId(), response);
 
                 }
             }, 80
